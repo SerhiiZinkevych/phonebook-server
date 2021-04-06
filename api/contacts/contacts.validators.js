@@ -1,10 +1,12 @@
 const Joi = require('joi')
+const { isValidObjectId } = require('mongoose')
 
 module.exports.validateCreateUser = (req, res, next) => {
   const schema = Joi.object({
     name: Joi.string().alphanum().min(3).max(30).required(),
-    email: Joi.string().email().required(),
-    phone: Joi.string().required().max(20),
+    email: Joi.string().email(),
+    phone: Joi.string().max(20),
+    favorite: Joi.boolean().default(false),
   })
   const result = schema.validate(req.body)
   if (result.error) {
@@ -18,10 +20,17 @@ module.exports.validateUpdateUser = (req, res, next) => {
     name: Joi.string().alphanum().min(3).max(30),
     email: Joi.string().email(),
     phone: Joi.string().max(20),
-  }).or('name', 'email', 'phone')
+    favorite: Joi.boolean(),
+  }).or('name', 'email', 'phone', 'favorite')
   const result = schema.validate(req.body)
   if (result.error) {
     return res.status(400).send(result.error)
   }
+  next()
+}
+
+module.exports.validateId = (req, res, next) => {
+  const isValid = isValidObjectId(req.params.contactId)
+  if (!isValid) return res.status(404).json({ message: 'ID is invalid' })
   next()
 }
