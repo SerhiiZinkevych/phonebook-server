@@ -1,8 +1,20 @@
 const contactsModel = require('./contacts.model')
+
 class ContactsController {
   async getContacts(req, res, next) {
     try {
-      const contacts = await contactsModel.find()
+      const { favorite, page, limit } = req.query
+      const filterObject = { owner: req.user }
+      let contacts
+      if (favorite) filterObject.favorite = favorite
+      if (page && limit) {
+        contacts = await contactsModel.paginate(filterObject, {
+          page,
+          limit,
+        })
+      } else {
+        contacts = await contactsModel.find(filterObject)
+      }
       return res.status(200).json(contacts)
     } catch (err) {
       next(err)
@@ -25,7 +37,10 @@ class ContactsController {
 
   async addContact(req, res, next) {
     try {
-      const newContact = await contactsModel.create(req.body)
+      const newContact = await contactsModel.create({
+        ...req.body,
+        owner: req.user,
+      })
       return res.status(201).json(newContact)
     } catch (err) {
       next(err)

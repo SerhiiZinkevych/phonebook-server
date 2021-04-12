@@ -1,35 +1,54 @@
 const express = require('express')
+const UsersController = require('../users/users.controller')
 
-const {
-  getContacts,
-  addContact,
-  getContactById,
-  deleteContact,
-  updateContact,
-  updateStatusContact,
-} = require('./contacts.controller')
+const ContactsController = require('./contacts.controller')
 
-const {
-  validateCreateUser,
-  validateUpdateUser,
-  validateId,
-} = require('./contacts.validators')
+const ContactsValidator = require('./contacts.validators')
 
 const contactsRouter = express.Router()
 
-contactsRouter.get('/', getContacts)
-contactsRouter.get('/:contactId', validateId, getContactById)
+contactsRouter.get(
+  '/',
+  UsersController.authorize,
+  ContactsController.getContacts
+)
+contactsRouter.get(
+  '/:contactId',
+  UsersController.authorize,
+  ContactsValidator.validateId,
+  ContactsValidator.isOwnerByContactID,
+  ContactsController.getContactById
+)
 
-contactsRouter.post('/', validateCreateUser, addContact)
+contactsRouter.post(
+  '/',
+  UsersController.authorize,
+  ContactsValidator.validateCreateUser,
+  ContactsController.addContact
+)
 
-contactsRouter.delete('/:contactId', validateId, deleteContact)
+contactsRouter.delete(
+  '/:contactId',
+  UsersController.authorize,
+  ContactsValidator.validateId,
+  ContactsValidator.isOwnerByContactID,
+  ContactsController.deleteContact
+)
 
 contactsRouter.patch(
   '/:contactId',
-  validateId,
-  validateUpdateUser,
-  updateContact
+  UsersController.authorize,
+  ContactsValidator.validateId,
+  ContactsValidator.validateUpdateUser,
+  ContactsValidator.isOwnerByContactID,
+  ContactsController.updateContact
 )
-contactsRouter.patch('/:contactId/favorite', validateId, updateStatusContact)
+contactsRouter.patch(
+  '/:contactId/favorite',
+  UsersController.authorize,
+  ContactsValidator.validateId,
+  ContactsValidator.isOwnerByContactID,
+  ContactsController.updateStatusContact
+)
 
 module.exports = contactsRouter

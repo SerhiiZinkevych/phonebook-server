@@ -4,6 +4,7 @@ const cors = require('cors')
 const Mogoose = require('mongoose')
 
 const contactsRouter = require('./contacts/contacts.routes')
+const UserRouter = require('./users/users.routes')
 
 require('dotenv').config()
 
@@ -29,8 +30,10 @@ class Server {
       await Mogoose.connect(process.env.MONGODB_URL, {
         useFindAndModify: false,
       })
-      console.log('Database connection successful')
+      console.log('\x1b[32m%s\x1b[0m', 'Database connection successful.')
     } catch (error) {
+      console.log('\x1B[31m%s\x1b[0m', 'Failed to connect to database.')
+
       console.log(error)
       process.exit(1)
     }
@@ -47,6 +50,7 @@ class Server {
 
   initRoutes() {
     this.server.use('/api/contacts', contactsRouter)
+    this.server.use('/users', UserRouter)
 
     this.server.use((req, res) => {
       res.status(404).json({ message: 'Not found' })
@@ -59,7 +63,12 @@ class Server {
 
   startListening() {
     this.server.listen(process.env.PORT, () => {
-      console.log('Server started listening on port:', process.env.PORT)
+      console.log(
+        'Server started listening on port:',
+        '\x1b[33m',
+        process.env.PORT,
+        '\x1b[0m'
+      )
     })
   }
 }
